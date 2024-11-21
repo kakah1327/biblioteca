@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { livroApi } from "./api/livroApi"; // Caminho para a API
+import { livroApi } from "./../api/livroApi"; // Caminho para a API
 import Link from "next/link"; // Componente Link para navegação
-import { Livros } from "./interface/livros"; 
+import { Livros } from "./interface/livros"; // Interface para os livros
 
 export default function FuncionarioLivros() {
   const [livros, setLivros] = useState<Livros[]>([]); // Lista de todos os livros
@@ -13,9 +13,9 @@ export default function FuncionarioLivros() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Estados de Paginação
+  // Paginação
   const [paginaAtual, setPaginaAtual] = useState(1); // Página atual
-  const [livrosPorPagina, setLivrosPorPagina] = useState(12); // Número de livros por página (ajustável)
+  const [livrosPorPagina] = useState(12); // Número de livros por página (ajustável)
 
   // Função para filtrar os livros com base na pesquisa e no filtro de status
   const filtrarLivros = () => {
@@ -77,7 +77,7 @@ export default function FuncionarioLivros() {
   const totalPaginas = Math.ceil(livrosFiltrados.length / livrosPorPagina);
 
   return (
-    <div className="py-10">
+    <div className="py-1">
       <h1 className="text-4xl font-bold text-center mb-6">Catálogo de Livros</h1>
 
       {/* Barra de Pesquisa */}
@@ -120,6 +120,17 @@ export default function FuncionarioLivros() {
               </div>
               <h2 className="text-xl font-bold mt-4 text-center">{livro.titulo}</h2>
               <p className="text-gray-500 text-center">Autor: {livro.autor}</p>
+
+              {/* Botão alinhado */}
+              <div className="flex justify-center mt-4 w-full">
+                <Link href={`/funcionario/livros/${livro.isbn}`}>
+                  <button
+                    className="px-4 py-2 bg-slate-500 text-white rounded hover:bg-slate-700 transition"
+                  >
+                    Ver Detalhes
+                  </button>
+                </Link>
+              </div>
             </div>
           ))}
         </div>
