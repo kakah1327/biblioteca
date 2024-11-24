@@ -4,29 +4,29 @@ import { useEffect, useState } from "react";
 import { livroApi } from "./api/livroApi"; // Caminho para a API
 import Link from "next/link"; // Componente Link para navegação
 import { Livros } from "./interface/livros"; 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Pesquisa from "./components/common/barra"; // Importa o componente Pesquisa estilizado
 
 export default function FuncionarioLivros() {
-  const [livros, setLivros] = useState<Livros[]>([]); // Lista de todos os livros
-  const [livrosFiltrados, setLivrosFiltrados] = useState<Livros[]>([]); // Lista de livros após filtragem
-  const [query, setQuery] = useState(""); // Valor da pesquisa
-  const [statusFilter, setStatusFilter] = useState(""); // Filtro de status (ex: "Disponível", "Emprestado")
+  const [livros, setLivros] = useState<Livros[]>([]);
+  const [livrosFiltrados, setLivrosFiltrados] = useState<Livros[]>([]);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Estados de Paginação
-  const [paginaAtual, setPaginaAtual] = useState(1); // Página atual
-  const [livrosPorPagina, setLivrosPorPagina] = useState(12); // Número de livros por página (ajustável)
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [livrosPorPagina, setLivrosPorPagina] = useState(12);
 
-  // Função para filtrar os livros com base na pesquisa e no filtro de status
   const filtrarLivros = () => {
     let filtrados = livros;
 
-    // Filtra os livros pelo status, se necessário
     if (statusFilter) {
       filtrados = filtrados.filter((livro) => livro.status === statusFilter);
     }
 
-    // Filtra os livros pelo termo de pesquisa (Título, Autor ou Categoria)
     if (query.trim()) {
       const queryLower = query.toLowerCase();
       filtrados = filtrados.filter(
@@ -43,9 +43,9 @@ export default function FuncionarioLivros() {
   useEffect(() => {
     const fetchLivros = async () => {
       try {
-        const livrosData = await livroApi.listarTodosLivros(); // Obtém a lista de livros
+        const livrosData = await livroApi.listarTodosLivros();
         setLivros(livrosData);
-        setLivrosFiltrados(livrosData); // Inicializa os livros filtrados com todos os livros
+        setLivrosFiltrados(livrosData);
       } catch (err: any) {
         setError("Erro ao carregar os livros. Tente novamente mais tarde.");
         console.error(err);
@@ -57,38 +57,28 @@ export default function FuncionarioLivros() {
     fetchLivros();
   }, []);
 
-  // Chama a função de filtragem toda vez que o query ou o statusFilter mudarem
   useEffect(() => {
     filtrarLivros();
   }, [query, statusFilter]);
 
-  // Função para alterar a página
   const mudarPagina = (numeroPagina: number) => {
     setPaginaAtual(numeroPagina);
   };
 
-  // Calcular o intervalo de livros para a página atual
   const livrosPaginados = livrosFiltrados.slice(
     (paginaAtual - 1) * livrosPorPagina,
     paginaAtual * livrosPorPagina
   );
 
-  // Calcular o número total de páginas
   const totalPaginas = Math.ceil(livrosFiltrados.length / livrosPorPagina);
 
   return (
     <div className="py-10">
-      <h1 className="text-4xl font-bold text-center mb-6">Catálogo de Livros</h1>
+      <h1 className="text-black text-4xl font-serif text-center mb-16">Catálogo de Livros</h1>
 
       {/* Barra de Pesquisa */}
-      <div className="flex justify-center items-center mb-6 px-4 text-black">
-        <input
-          type="text"
-          placeholder="Digite sua busca por título, autor ou categoria..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)} // Atualiza o estado de busca
-          className="border p-2 w-1/2 focus:outline-none rounded-lg"
-        />
+      <div className="flex justify-center items-center mb-6 px-4 text-black mt-10">
+        <Pesquisa query={query} setQuery={setQuery} />
       </div>
 
       {/* Mensagem de erro */}
@@ -108,12 +98,12 @@ export default function FuncionarioLivros() {
           {livrosPaginados.map((livro) => (
             <div
               key={livro.isbn}
-              className="border flex flex-col items-center rounded-lg shadow-md p-4 hover:shadow-lg transition"
+              className="bg-gray-200 text-gray-700 border flex flex-col items-center rounded-lg shadow-md p-4 hover:shadow-lg transition"
             >
               {/* Container da imagem */}
               <div className="w-40 h-60">
                 <img
-                  src={livro.capa || "/path/to/default/image.jpg"} // Fallback para uma imagem padrão
+                  src={livro.capa || "/path/to/default/image.jpg"}
                   alt={`Capa do livro ${livro.titulo}`}
                   className="object-cover w-full h-full"
                 />
@@ -126,7 +116,7 @@ export default function FuncionarioLivros() {
       )}
 
       {/* Paginação */}
-      <div className="flex justify-center mt-6">
+      <div className="flex justify-center mt-6 ">
         <button
           onClick={() => mudarPagina(paginaAtual - 1)}
           disabled={paginaAtual === 1}
@@ -134,11 +124,11 @@ export default function FuncionarioLivros() {
         >
           Anterior
         </button>
-        <span className="px-4 py-2 text-white">{paginaAtual} de {totalPaginas}</span>
+        <span className="px-4 py-2 text-black">{paginaAtual} de {totalPaginas}</span>
         <button
           onClick={() => mudarPagina(paginaAtual + 1)}
           disabled={paginaAtual === totalPaginas}
-          className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition disabled:opacity-50"
+          className="px-4 py-2 bg-slate-600  rounded-lg hover:bg-slate-700 transition disabled:opacity-50"
         >
           Próxima
         </button>

@@ -40,18 +40,22 @@ const ModalDadosFuncionario: React.FC<ModalDadosFuncionarioProps> = ({ isOpen, o
 
     setLoading(true);
     setError(null);
-
-    try {
-      const updatedUser = await usuarioApi.atualizarUsuario(user.username, formData);
-      onSave(updatedUser); // Callback para o componente pai
-      onClose(); // Fecha o modal
-    } catch (err) {
-      console.error('Erro ao salvar os dados:', err);
-      setError('Ocorreu um erro ao salvar os dados.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const updatedUser = await usuarioApi.atualizarUsuario(user.username, formData);
+    onSave(updatedUser); // Callback para o componente pai
+    onClose(); // Fecha o modal
+  } catch (err: any) {
+    console.error('Erro ao salvar os dados:', err);
+    
+    // Verifica se o erro tem uma mensagem personalizada
+    const errorMessage = err?.message || 'Ocorreu um erro ao salvar os dados.';
+    
+    // Atualiza o estado de erro com a mensagem retornada da API
+    setError(errorMessage);
+  } finally {
+    setLoading(false); // Finaliza o carregamento
+  }
+};
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -176,14 +180,14 @@ const ModalDadosFuncionario: React.FC<ModalDadosFuncionarioProps> = ({ isOpen, o
         <div className="mt-4 flex justify-end space-x-2">
           <button
             onClick={onClose}
-            className="bg-gray-600 px-4 py-2 rounded hover:bg-gray-700"
+            className="bg-gray-600 px-4 py-2 rounded hover:bg-gray-700 text-white"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={loading}
-            className={`bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 ${
+            className={`bg-slate-600 px-4 py-2 rounded hover:bg-slate-700 text-white ${
               loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { usuarioApi } from "../../api/usuarioApi";
 import { Usuario } from "../interface/usuario";
 import ModalDadosFuncionario from "../../modal/modalUsuario";
+import Link from "next/link";
+import Botao from "../../components/common/button";
+
 
 export default function ListaUsuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -12,23 +15,20 @@ export default function ListaUsuarios() {
   const [modalAberto, setModalAberto] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pesquisa, setPesquisa] = useState(""); // Estado da barra de pesquisa
-  const [statusFiltro, setStatusFiltro] = useState<string>(""); // Filtro de status
-  
-  // Paginação
-  const [paginaAtual, setPaginaAtual] = useState(1); // Página atual
-  const [usuariosPorPagina] = useState(10); // Número de usuários por página
+  const [pesquisa, setPesquisa] = useState("");
+  const [statusFiltro, setStatusFiltro] = useState<string>("");
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [usuariosPorPagina] = useState(10);
 
-  // Carregar todos os usuários ao montar o componente
   useEffect(() => {
     const fetchUsuarios = async () => {
       try {
         const data = await usuarioApi.listarTodosUsuarios();
         setUsuarios(data);
         setUsuariosFiltrados(data);
-      } catch (err) {
-        setError("Erro ao carregar usuários. Tente novamente mais tarde.");
-        console.error(err);
+      } catch (err: any) {
+        setError(err?.message || "Erro ao carregar usuários. Tente novamente mais tarde.");
+        console.error("Erro ao carregar usuários:", err);
       } finally {
         setLoading(false);
       }
@@ -37,19 +37,17 @@ export default function ListaUsuarios() {
     fetchUsuarios();
   }, []);
 
-  // Função para abrir o modal
   const abrirModal = (usuario: Usuario) => {
+    console.log("Abrindo modal para:", usuario);
     setUsuarioSelecionado(usuario);
     setModalAberto(true);
   };
 
-  // Função para fechar o modal
   const fecharModal = () => {
     setUsuarioSelecionado(null);
     setModalAberto(false);
   };
 
-  // Callback para salvar as alterações no usuário
   const salvarAlteracoes = (usuarioAtualizado: Usuario) => {
     setUsuarios((usuariosAnteriores) =>
       usuariosAnteriores.map((u) =>
@@ -59,7 +57,6 @@ export default function ListaUsuarios() {
     fecharModal();
   };
 
-  // Função para filtrar os usuários
   const filtrarUsuarios = (termo: string, status: string) => {
     setPesquisa(termo);
     setStatusFiltro(status);
@@ -79,32 +76,32 @@ export default function ListaUsuarios() {
           usuario.nome.toLowerCase().includes(termoLower) ||
           usuario.username.toLowerCase().includes(termoLower) ||
           usuario.email.toLowerCase().includes(termoLower) ||
-          usuario.cpf.includes(termo) // CPF não precisa de .toLowerCase(), pois é numérico
+          usuario.cpf.includes(termo)
       );
     }
 
     setUsuariosFiltrados(filtrados);
   };
 
-  // Função para alterar a página
   const mudarPagina = (numeroPagina: number) => {
     setPaginaAtual(numeroPagina);
   };
 
-  // Calcular o intervalo de usuários para a página atual
   const usuariosPaginados = usuariosFiltrados.slice(
     (paginaAtual - 1) * usuariosPorPagina,
     paginaAtual * usuariosPorPagina
   );
 
-  // Calcular o número total de páginas
   const totalPaginas = Math.ceil(usuariosFiltrados.length / usuariosPorPagina);
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-gray-800 rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold text-center mb-6 text-white">Lista de Usuários</h1>
-
-      {/* Barra de Pesquisa */}
+    <div className="max-w-6xl mx-auto p-6 bg-gray-200 rounded-lg shadow-md">
+        <Link href="/funcionario/usuario/cadastrar">
+          <Botao className="bg-gray-500">
+            Cadastrar Novo Usuário
+          </Botao>
+        </Link>
+      <h1 className="text-3xl font-bold text-center mb-6 text-black">Lista de Usuários</h1>
       <div className="flex justify-center mb-4">
         <input
           type="text"
@@ -115,7 +112,6 @@ export default function ListaUsuarios() {
         />
       </div>
 
-      {/* Filtro de Status */}
       <div className="flex justify-center mb-6">
         <select
           value={statusFiltro}
@@ -128,18 +124,15 @@ export default function ListaUsuarios() {
         </select>
       </div>
 
-      {/* Estado de Carregamento e Erros */}
       {loading && <p className="text-center text-white">Carregando usuários...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
 
-      {/* Nenhum Resultado */}
       {!loading && !error && usuariosPaginados.length === 0 && (
         <p className="text-center text-gray-500">Nenhum usuário encontrado.</p>
       )}
 
-      {/* Tabela de Usuários */}
       {!loading && !error && usuariosPaginados.length > 0 && (
-        <table className="w-full text-left border-collapse text-white">
+        <table className="w-full text-left border-collapse text-black">
           <thead>
             <tr>
               <th className="border-b py-2 px-4">Username</th>
@@ -152,7 +145,7 @@ export default function ListaUsuarios() {
           </thead>
           <tbody>
             {usuariosPaginados.map((usuario) => (
-              <tr key={usuario.username} className="hover:bg-gray-600">
+              <tr key={usuario.username} className="hover:bg-gray-300">
                 <td className="border-b py-2 px-4">{usuario.username}</td>
                 <td className="border-b py-2 px-4">{usuario.nome}</td>
                 <td className="border-b py-2 px-4">{usuario.cpf}</td>
@@ -161,12 +154,12 @@ export default function ListaUsuarios() {
                   {usuario.usuarioAtivo ? "Ativo" : "Inativo"}
                 </td>
                 <td className="border-b py-2 px-4">
-                  <button
-                    className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition"
+                  <Botao
                     onClick={() => abrirModal(usuario)}
+                    className=""
                   >
                     Alterar
-                  </button>
+                  </Botao>
                 </td>
               </tr>
             ))}
@@ -174,7 +167,6 @@ export default function ListaUsuarios() {
         </table>
       )}
 
-      {/* Paginação */}
       <div className="flex justify-center mt-6">
         <button
           onClick={() => mudarPagina(paginaAtual - 1)}
@@ -193,7 +185,6 @@ export default function ListaUsuarios() {
         </button>
       </div>
 
-      {/* Modal de Edição */}
       {usuarioSelecionado && (
         <ModalDadosFuncionario
           isOpen={modalAberto}

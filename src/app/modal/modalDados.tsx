@@ -72,8 +72,8 @@ const ModalDados: React.FC<ModalDadosProps> = ({ isOpen, onClose, user, onSave }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 transition-opacity">
-      <div className="bg-black p-6 rounded-lg shadow-md w-[800px] h-[550px] text-white">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 transition-opacity z-50">
+      <div className="bg-black p-6 rounded-lg shadow-md w-[80vw] h-[90vh] max-w-[1000px] max-h-[80vh] text-white overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">Alterar Dados</h2>
         <div className="space-y-4 max-h-[400px] overflow-y-auto">
           {/* Campos do formulário */}

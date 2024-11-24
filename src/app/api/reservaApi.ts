@@ -2,15 +2,22 @@ import api from './apiCentral'; // Certifique-se de que o caminho está correto
 
 export const reservaApi = {
 
-  // Função para listar todas as reservas
-  listarTodasReservas: async (): Promise<Reserva[]> => {
-    try {
-      const response = await api.get('/reservas');
-      return response.data; // Retorna a lista de todas as reservas
-    } catch (error) {
-      throw new Error('Erro ao carregar reservas');
+
+// Função para listar todas as reservas
+listarTodasReservas: async (): Promise<Reserva[]> => {
+  try {
+    const response = await api.get('/reservas');
+    return response.data; // Retorna a lista de todas as reservas
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      // Retorna uma lista vazia se for um erro 404
+      return [];
     }
-  },
+    // Outros erros
+    throw new Error(error.response?.data || 'Erro ao listar reservas');
+  }
+},
+
 
   // Função para listar reservas por nome de usuário
   listarReservasPorUsername: async (username: string): Promise<Reserva[]> => {
@@ -19,9 +26,8 @@ export const reservaApi = {
       return response.data;
     } catch (error: any) {
       console.error(`Erro ao carregar reservas para o usuário ${username}:`, error.response || error);
-      const message =
-        error.response?.data?.message || 'Erro desconhecido ao carregar reservas.';
-      throw new Error(message);
+      const message = error.response?.data?.message || 'Erro ao carregar reservas para o usuário.';
+      throw new Error(message);      
     }
   },
 
@@ -30,8 +36,11 @@ export const reservaApi = {
     try {
       const response = await api.get(`/reservas/id/${id}`);
       return response.data; // Retorna a reserva com o ID especificado
-    } catch (error) {
-      throw new Error(`Erro ao carregar reserva com ID ${id}`);
+    } catch (error: any) {
+      console.error(`Erro ao carregar reservas para o ID ${id}:`, error.response || error);
+      const message =
+        error.response?.data?.message || 'Erro desconhecido ao carregar reservas.';
+      throw new Error(message);
     }
   },
 
@@ -40,8 +49,8 @@ export const reservaApi = {
     try {
       const response = await api.get('/reservas/atrasadas');
       return response.data; // Retorna as reservas atrasadas
-    } catch (error) {
-      throw new Error('Erro ao carregar reservas atrasadas');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao listar reservas atrasadas');
     }
   },
 
@@ -50,8 +59,8 @@ export const reservaApi = {
     try {
       const response = await api.post('/reservas/realizar', null, { params: { isbn, username } });
       return response.data; // Retorna mensagem de sucesso
-    } catch (error) {
-      throw new Error('Erro ao realizar reserva');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao listar reservas');
     }
   },
 
@@ -60,10 +69,10 @@ export const reservaApi = {
     try {
       const response = await api.delete(`/reservas/${id}`);
       return response.data; // Retorna mensagem de sucesso
-    } catch (error) {
-      throw new Error(`Erro ao remover reserva com ID ${id}`);
+    } catch (error: any) {
+      throw new Error(error.response?.data || `Erro ao deletar reserva ${id}`);
     }
-  },
+    },
 
   transformarReservaEmEmprestimo: async (reservaId: number): Promise<string> => {
     try {
@@ -73,7 +82,7 @@ export const reservaApi = {
       return response.data; // Retorna mensagem de sucesso ou erro
     } catch (error: any) {
       console.error('Erro na API ao transformar a reserva em empréstimo:', error); // Log de erro detalhado
-      throw new Error(`Erro ao transformar a reserva ${reservaId} em empréstimo: ${error.message}`);
+      throw new Error(error.response?.data || `Erro ao transformar a reserva ${reservaId} em empréstimo: ${error.message}`);
     }
   }
 

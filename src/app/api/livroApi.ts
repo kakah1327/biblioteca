@@ -8,7 +8,11 @@ export const livroApi = {
       const response = await api.get('/livros'); // Endpoint para listar todos os livros
       return response.data; // Retorna os dados dos livros
     } catch (error) {
-      throw new Error('Erro ao carregar livros');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao listar livros';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -18,7 +22,11 @@ export const livroApi = {
       const response = await api.get(`/livros/categoria/${categoria}`);
       return response.data; // Retorna a lista de livros filtrados pela categoria
     } catch (error) {
-      throw new Error('Erro ao carregar livros por categoria');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao listar livros por categoria';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -28,7 +36,11 @@ export const livroApi = {
       const response = await api.get(`/livros/isbn/${isbn}`);
       return response.data; // Retorna os dados do livro pelo ISBN
     } catch (error) {
-      throw new Error('Erro ao carregar livro por ISBN');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao listar livros por ISBN';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -38,7 +50,11 @@ export const livroApi = {
       const response = await api.get(`/livros/titulo/${titulo}`);
       return response.data; // Retorna livros que correspondem ao título
     } catch (error) {
-      throw new Error('Erro ao carregar livros por título');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao listar livros por título';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -48,7 +64,11 @@ export const livroApi = {
       const response = await api.get(`/livros/autor/${autor}`);
       return response.data; // Retorna livros encontrados por autor
     } catch (error) {
-      throw new Error('Erro ao carregar livros por autor');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao listar livros por autor';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -58,7 +78,11 @@ export const livroApi = {
       const response = await api.post('/livros', livro); // Envia dados para criação do livro
       return response.data; // Retorna mensagem de sucesso
     } catch (error) {
-      throw new Error('Erro ao salvar livro');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao salvar livro';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -72,8 +96,11 @@ atualizarLivro: async (isbn: string, livro: Livro): Promise<string> => {
     }
     throw new Error('Falha ao atualizar livro: ' + response.statusText);
   } catch (error) {
-    console.error('Erro ao atualizar livro:', error);
-    throw new Error('Erro ao atualizar livro');
+    if (error.response) {
+      const message = error.response.data || 'Erro ao salvar livro';
+      throw new Error(message);
+    }
+    throw new Error('Erro de rede ou servidor');
   }
 },
 
@@ -83,7 +110,11 @@ atualizarLivro: async (isbn: string, livro: Livro): Promise<string> => {
       const response = await api.delete(`/livros/${isbn}`); // Envia requisição para remover o livro
       return response.data; // Retorna mensagem de sucesso
     } catch (error) {
-      throw new Error('Erro ao remover livro');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao remover livros';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { livroApi } from '../api/livroApi';
 
 interface ModalEditarLivroProps {
@@ -14,21 +14,43 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
   const [autor, setAutor] = useState(livro?.autor || '');
   const [categoria, setCategoria] = useState(livro?.categoria || '');
   const [quantidadeEstoque, setQuantidadeEstoque] = useState(livro?.quantidadeEstoque || 0);
-  const [livroFisico, setLivroFisico] = useState(livro?.livroFisico || false); // Se o livro é físico ou digital
-  const [livroDigital, setLivroDigital] = useState(livro?.livroDigital || false); // Se o livro é digital
+  const [livroFisico, setLivroFisico] = useState(livro?.livroFisico || false); 
+  const [livroDigital, setLivroDigital] = useState(livro?.livroDigital || false);
   const [quantidadeLicencas, setQuantidadeLicencas] = useState(livro?.quantidadeLicencas || 0);
   const [descricao, setDescricao] = useState(livro?.descricao || '');
+  const [capa, setCapa] = useState(livro?.capa || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);  // Estado para mensagem de erro
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);  // Estado para mensagem de sucesso
+
+  // Resetando os estados quando o modal é fechado
+  useEffect(() => {
+    if (!isOpen) {
+      setIsbn(livro?.isbn || '');
+      setTitulo(livro?.titulo || '');
+      setAutor(livro?.autor || '');
+      setCategoria(livro?.categoria || '');
+      setQuantidadeEstoque(livro?.quantidadeEstoque || 0);
+      setLivroFisico(livro?.livroFisico || false);
+      setLivroDigital(livro?.livroDigital || false);
+      setQuantidadeLicencas(livro?.quantidadeLicencas || 0);
+      setDescricao(livro?.descricao || '');
+      setCapa(livro?.capa || '');
+      setErrorMessage(null);  // Limpa mensagem de erro ao fechar o modal
+      setSuccessMessage(null);  // Limpa mensagem de sucesso ao fechar o modal
+    }
+  }, [isOpen, livro]);
 
   if (!isOpen) return null;
 
   const handleSaveLivro = async () => {
-    // Validação para garantir que o campo 'quantidadeLicencas' seja preenchido apenas para livros digitais
-    if (livroDigital && quantidadeLicencas <= 0) {
-      alert('Por favor, insira uma quantidade de licenças válida para livros digitais.');
+    // Validação: Se for livro digital e a quantidade de licenças for menor ou igual a 0
+    if (livroDigital && quantidadeLicencas < 0) {
+      setErrorMessage('Por favor, insira uma quantidade de licenças válida para livros digitais.');
       return;
     }
 
+    // Não faz a validação de quantidade de licenças se o livro não for digital
     setIsSaving(true);
 
     const livroEditado = {
@@ -41,6 +63,7 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
       livroDigital,
       quantidadeLicencas,
       descricao,
+      capa: capa || livro?.capa, // Se não for enviada uma nova capa, mantém a capa atual
     };
 
     try {
@@ -49,25 +72,43 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
 
       if (!response) {
         console.error('Resposta inesperada ao salvar o livro:', response);
-        alert('A atualização foi concluída, mas houve um comportamento inesperado.');
+        setErrorMessage('A atualização foi concluída, mas houve um comportamento inesperado.');
+      } else {
+        setSuccessMessage('Livro atualizado com sucesso!');
+        onSave(livroEditado);  // Passa os dados atualizados para o componente pai
+        onClose();  // Fecha o modal
       }
-
-      onSave(livroEditado);
-      onClose();
     } catch (error: any) {
       console.error('Erro ao atualizar o livro:', error);
-      alert(`Erro ao atualizar o livro: ${error.message || 'Erro desconhecido'}`);
+      setErrorMessage(`Erro ao atualizar o livro: ${error.message || 'Erro desconhecido'}`);
     } finally {
       setIsSaving(false);
     }
   };
 
+  // Função para atualizar o estado da capa
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCapa(reader.result as string); // Atualiza a capa com a imagem em Base64
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-black rounded-lg p-6 w-full max-w-md shadow-lg">
+    <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex justify-center items-center z-50">
+  <div className="bg-gray-200 rounded-lg p-6 w-[50%] max-h-[90vh] shadow-lg">
         <h2 className="text-xl font-bold mb-4">Editar Livro</h2>
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto"> {/* Adiciona a rolagem aqui */}
-          {/* ISBN */}
+        
+        {/* Exibição das mensagens de erro ou sucesso */}
+        {errorMessage && <div className="text-red-600 mb-4">{errorMessage}</div>}
+        {successMessage && <div className="text-green-600 mb-4">{successMessage}</div>}
+        
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+          {/* Inputs para os campos de edição */}
           <div>
             <label className="block font-medium">ISBN:</label>
             <input
@@ -77,7 +118,6 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
               className="w-full p-2 border rounded-md text-black"
             />
           </div>
-          {/* Título */}
           <div>
             <label className="block font-medium">Título:</label>
             <input
@@ -87,7 +127,6 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
               className="w-full p-2 border rounded-md text-black"
             />
           </div>
-          {/* Autor */}
           <div>
             <label className="block font-medium">Autor:</label>
             <input
@@ -97,7 +136,6 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
               className="w-full p-2 border rounded-md text-black"
             />
           </div>
-          {/* Categoria */}
           <div>
             <label className="block font-medium">Categoria:</label>
             <input
@@ -107,7 +145,6 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
               className="w-full p-2 border rounded-md text-black"
             />
           </div>
-          {/* Quantidade em Estoque */}
           <div>
             <label className="block font-medium">Quantidade em Estoque:</label>
             <input
@@ -117,7 +154,6 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
               className="w-full p-2 border rounded-md text-black"
             />
           </div>
-          {/* Tipo de Livro: Físico ou Digital */}
           <div>
             <label className="block font-medium">Tipo de Livro:</label>
             <div className="space-x-4">
@@ -141,7 +177,6 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
               </label>
             </div>
           </div>
-          {/* Quantidade de Licenças */}
           <div>
             <label className="block font-medium">Quantidade de Licenças:</label>
             <input
@@ -149,20 +184,34 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
               value={quantidadeLicencas}
               onChange={(e) => setQuantidadeLicencas(Number(e.target.value))}
               className="w-full p-2 border rounded-md text-black"
-              disabled={!livroDigital} // Desabilita se o livro não for digital
+              disabled={!livroDigital}
             />
             {livroDigital && (
               <p className="text-sm text-gray-500">Este campo é relevante apenas para livros digitais.</p>
             )}
           </div>
-          {/* Descrição */}
           <div>
             <label className="block font-medium">Descrição:</label>
             <textarea
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
+              className="w-full p-2 border rounded-md text-black h-32"
+            />
+          </div>
+          <div>
+            <label className="block font-medium">Capa do Livro:</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
               className="w-full p-2 border rounded-md text-black"
             />
+            {capa && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-500">Prévia da capa:</p>
+                <img src={capa} alt="Capa do livro" className="w-40 h-56 object-cover border border-gray-300 rounded-md" />
+              </div>
+            )}
           </div>
         </div>
         <div className="mt-6 flex justify-end space-x-4">
@@ -171,7 +220,7 @@ const ModalEditarLivro: React.FC<ModalEditarLivroProps> = ({ livro, isOpen, onCl
           </button>
           <button
             onClick={handleSaveLivro}
-            className={`px-4 py-2 rounded-lg text-white ${isSaving ? 'bg-gray-600' : 'bg-slate-600 hover:bg-slate-700'}`}
+            className={`px-4 py-2 bg-blue-600 text-white rounded-lg ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
             disabled={isSaving}
           >
             {isSaving ? 'Salvando...' : 'Salvar'}

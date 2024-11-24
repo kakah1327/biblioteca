@@ -1,23 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { livroApi } from "../api/livroApi"; // Caminho para a API
-import Link from "next/link"; // Componente Link para navegação
 import { Livros } from "../interface/livros";
+import Link from "next/link"; // Componente Link para navegação
 import { useAuth } from "../context/authContext"; // Importando o hook para usar o contexto de autenticação
+import Pesquisa from "../components/common/barra"; // Importa o componente Pesquisa estilizado
 
 export default function ClienteLivros() {
   const { user } = useAuth(); // Recupera os dados do usuário do contexto
   const [livros, setLivros] = useState<Livros[]>([]);
-  const [livrosFiltrados, setLivrosFiltrados] = useState<Livros[]>([]); // Estado para armazenar livros filtrados
+  const [livrosFiltrados, setLivrosFiltrados] = useState<Livros[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState(""); // Estado para o valor de busca
   const [filter, setFilter] = useState("titulo"); // Estado para o tipo de filtro (título, categoria, autor)
-
-  // Paginação
   const [paginaAtual, setPaginaAtual] = useState(1); // Página atual
-  const [livrosPorPagina, setLivrosPorPagina] = useState(12); // Número de livros por página
+  const livrosPorPagina = 12; // Número de livros por página
+
+
 
   // Função para buscar livros com base no filtro e na busca
   const handleSearch = async () => {
@@ -57,6 +59,8 @@ export default function ClienteLivros() {
       setLoading(false);
     }
   };
+
+  
 
   // Carregar todos os livros inicialmente
   useEffect(() => {
@@ -101,43 +105,30 @@ export default function ClienteLivros() {
   }
 
   return (
-    <div className="py-1">
-      {/* Saudação personalizada com o nome do usuário */}
-      <h1 className="text-4xl font-bold text-center mb-6">
-        Bem-vindo, {user.username}
-      </h1>
-      <h1 className="text-4xl font-bold text-center mb-6">Catálogo de Livros</h1>
+    <div className="py-1 ">
+      <h1 className="text-4xl font-bold text-center mb-16 text-black">Catálogo de Livros</h1>
 
-      {/* Barra de Pesquisa */}
-      <div className="flex justify-center items-center mb-6 px-4 text-black">
-        <input
-          type="text"
-          placeholder="Digite sua busca..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)} // Atualiza a query de busca
-          className="border p-2 w-1/2 focus:outline-none rounded-lg"
-        />
+      {/* Renderiza a barra de pesquisa somente se o modal não estiver aberto */}
+          {/* Renderiza a barra de pesquisa somente se o modal não estiver aberto */}
+    {!isEditModalOpen ? (
+      <div className="flex justify-center items-center mb-10 px-4 text-black mt-15">
+        <Pesquisa query={query} setQuery={setQuery} isEditModalOpen={isEditModalOpen} />
       </div>
-
-      {/* Mensagem caso não existam livros */}
-      {!loading && !error && livrosPaginados.length === 0 && (
-        <p className="text-center text-gray-500">
-          Nenhum livro disponível no momento.
-        </p>
-      )}
-
+    ) : (
+      <p>Modal aberto, barra de pesquisa desabilitada</p> // Simples para testar se o estado está sendo detectado corretamente
+    )}
       {/* Lista de livros */}
       {!loading && !error && livrosPaginados.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 px-4 ">
           {livrosPaginados.map((livro) => (
-            <div
+            <Link
               key={livro.isbn}
-              className="border flex flex-col items-center rounded-lg shadow-md p-4 hover:shadow-lg transition"
+              href={`/cliente/livros/${livro.isbn}`} // Navega para a página do livro
+              className="border flex flex-col items-center rounded-lg shadow-md p-4 hover:shadow-lg transition bg-gray-200 text-gray-700"
             >
-              {/* Container da imagem */}
               <div className="w-40 h-60">
                 <img
-                  src={livro.capa || "/path/to/default/image.jpg"} // Fallback para uma imagem padrão
+                  src={livro.capa || "/path/to/default/image.jpg"}
                   alt={`Capa do livro ${livro.titulo}`}
                   className="object-cover w-full h-full"
                 />
@@ -146,18 +137,7 @@ export default function ClienteLivros() {
                 {livro.titulo}
               </h2>
               <p className="text-gray-500 text-center">Autor: {livro.autor}</p>
-              
-              {/* Botão alinhado */}
-              <div className="flex justify-center mt-4 w-full">
-                <Link href={`/cliente/livros/${livro.isbn}`}>
-                  <button
-                    className="px-4 py-2 bg-slate-500 text-white rounded hover:bg-slate-700 transition"
-                  >
-                    Ver Detalhes
-                  </button>
-                </Link>
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
@@ -177,7 +157,7 @@ export default function ClienteLivros() {
         >
           Anterior
         </button>
-        <span className="px-4 py-2 text-white">{paginaAtual} de {totalPaginas}</span>
+        <span className="px-4 py-2 text-black">{paginaAtual} de {totalPaginas}</span>
         <button
           onClick={() => mudarPagina(paginaAtual + 1)}
           disabled={paginaAtual === totalPaginas}

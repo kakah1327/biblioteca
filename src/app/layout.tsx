@@ -5,6 +5,8 @@ import { ReactNode, useState } from 'react';
 import { Roboto } from 'next/font/google';
 import { AuthProvider } from './context/authContext';
 import ModalLogin from './modal/modalLogin'; // Modal de Login
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 // Importar os novos componentes Header e Footer
 import Header from './components/common/header';
@@ -27,8 +29,9 @@ export default function RootLayout({ children }: LayoutProps) {
   const closeModal = () => setIsModalOpen(false); // Função para fechar o modal
 
   return (
-    <html lang="pt-BR" className="bg-black">
-      <body className={`${roboto.className} bg-black text-white`}>
+    <html lang="pt-BR" className="bg-white">
+      <body className={`${roboto.className} bg-white text-white`}>
+      <ToastContainer />
         <AuthProvider>
           {/* Passa openModal para o Header */}
           <Header openModal={openModal} />  {/* O Header agora tem o openModal como prop */}

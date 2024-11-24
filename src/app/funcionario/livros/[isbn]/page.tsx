@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { livroApi } from '../../../api/livroApi';
@@ -11,6 +10,8 @@ const LivroPageFuncionario: React.FC = () => {
   const [livro, setLivro] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Mensagem de sucesso
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mensagem de erro
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controle do modal de editar livro
   const [isModalEmprestarOpen, setIsModalEmprestarOpen] = useState(false); // Estado para controle do modal de emprestar
   const [isModalReservarOpen, setIsModalReservarOpen] = useState(false); // Estado para controle do modal de reservar
@@ -72,20 +73,26 @@ const LivroPageFuncionario: React.FC = () => {
       console.log('Resposta da API:', response);
   
       if (!response) {
+        setSuccessMessage(null);
         console.error('Resposta inesperada ao salvar o livro:', response);
-        alert('A atualização foi concluída, mas houve um comportamento inesperado.');
+        setErrorMessage('A atualização foi concluída, mas houve um comportamento inesperado.');
+        return;
       }
   
       // Atualiza o estado com os novos dados
       setLivro(livroAtualizado);
-  
-      alert('Livro atualizado com sucesso!');
-      handleCloseModal(); // Fecha o modal após salvar
+      setErrorMessage(null);
+      setSuccessMessage('Livro atualizado com sucesso!');
+      
+      // Fecha o modal após salvar, apenas em caso de sucesso
+      handleCloseModal();
     } catch (error: any) {
+      setSuccessMessage(null);
       console.error('Erro ao atualizar o livro:', error);
-      alert(`Erro ao atualizar o livro: ${error.message || 'Erro desconhecido'}`);
+      setErrorMessage(`Erro ao atualizar o livro: ${error.message || 'Erro desconhecido'}`);
     }
   };
+  
 
   const handleEmprestarLivro = async (tipoEmprestimo: 'fisico' | 'digital') => {
     try {
@@ -97,7 +104,7 @@ const LivroPageFuncionario: React.FC = () => {
         if (livro.licencas > 0) {
           response = await emprestimoApi.realizarEmprestimoDigital(livro.isbn, clienteNome);
         } else {
-          alert('Não há licenças disponíveis para este livro digital.');
+          setErrorMessage('Não há licenças disponíveis para este livro digital.');
           return;
         }
       }
@@ -105,15 +112,19 @@ const LivroPageFuncionario: React.FC = () => {
       console.log('Resposta da API ao emprestar livro:', response);
 
       if (response) {
-        alert(`${tipoEmprestimo === 'fisico' ? 'Empréstimo físico' : 'Empréstimo digital'} realizado com sucesso!`);
+        setErrorMessage(null);
+        setSuccessMessage(`${tipoEmprestimo === 'fisico' ? 'Empréstimo físico' : 'Empréstimo digital'} realizado com sucesso!`);
       } else {
-        alert(`Erro ao realizar o empréstimo ${tipoEmprestimo === 'fisico' ? 'físico' : 'digital'}`);
+        setSuccessMessage(null);
+        setErrorMessage(`Erro ao realizar o empréstimo ${tipoEmprestimo === 'fisico' ? 'físico' : 'digital'}`);
       }
 
       handleCloseModalEmprestar();
     } catch (error: any) {
+      setSuccessMessage(null);
       console.error('Erro ao emprestar o livro:', error);
-      alert(`Erro ao emprestar o livro: ${error.message || 'Erro desconhecido'}`);
+      setErrorMessage(`Erro ao emprestar o livro: ${error.message || 'Erro desconhecido'}`);
+      handleCloseModalEmprestar();  // Fecha o modal em caso de erro
     }
   };
 
@@ -124,15 +135,19 @@ const LivroPageFuncionario: React.FC = () => {
       console.log('Resposta da API ao realizar reserva:', response);
 
       if (response) {
-        alert('Reserva realizada com sucesso!');
+        setErrorMessage(null);
+        setSuccessMessage('Reserva realizada com sucesso!');
       } else {
-        alert('Erro ao realizar a reserva!');
+        setSuccessMessage(null);
+        setErrorMessage('Erro ao realizar a reserva!');
       }
 
       handleCloseModalReservar();
     } catch (error: any) {
+      setSuccessMessage(null);
       console.error('Erro ao reservar o livro:', error);
-      alert(`Erro ao reservar o livro: ${error.message || 'Erro desconhecido'}`);
+      setErrorMessage(`Erro ao reservar o livro: ${error.message || 'Erro desconhecido'}`);
+      handleCloseModalReservar(); 
     }
   };
 
@@ -140,8 +155,7 @@ const LivroPageFuncionario: React.FC = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    
-    <div className="max-w-7xl mx-auto bg-gray-700 p-6 rounded-lg shadow-md">
+    <div className="max-w-7xl mx-auto bg-gray-200 p-6 rounded-lg shadow-md">
       {livro ? (
         <>
           <div className="flex flex-col md:flex-row items-start gap-6">
@@ -159,8 +173,16 @@ const LivroPageFuncionario: React.FC = () => {
               <p><strong>Autor:</strong> {livro.autor}</p>
               <p><strong>Categoria:</strong> {livro.categoria}</p>
               <p><strong>Quantidade em Estoque:</strong> {livro.quantidadeEstoque}</p>
-              {livro.tipo === 'digital' && (
-                <p><strong>Licenças Disponíveis:</strong> {livro.quantidadeLicencas}</p>
+            
+              <p><strong>Licenças Disponíveis:</strong> {livro.quantidadeLicencas}</p>
+              
+
+              {/* Exibição de mensagens de erro ou sucesso */}
+              {errorMessage && (
+                <p className="text-red-500 mt-4">{errorMessage}</p>
+              )}
+              {successMessage && (
+                <p className="text-green-500 mt-4">{successMessage}</p>
               )}
 
               <div className="mt-6 flex space-x-4">
@@ -183,6 +205,11 @@ const LivroPageFuncionario: React.FC = () => {
                   Reservar livro
                 </button>
               </div>
+              <div className="mt-28 flex justify-end">
+                <button
+                onClick={() => window.location.href = '/funcionario'}
+                className="px-4 py-2 bg-slate-500 text-white rounded-lg hover:bg-slate-600">Voltar</button>
+              </div>
             </div>
           </div>
 
@@ -197,7 +224,7 @@ const LivroPageFuncionario: React.FC = () => {
           {/* Modal de Emprestar */}
           {isModalEmprestarOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-black rounded-lg p-6 w-full max-w-md shadow-lg">
+              <div className="bg-gray-200 rounded-lg p-6 w-full max-w-md shadow-lg">
                 <h2 className="text-xl font-bold mb-4">Emprestar Livro</h2>
                 <div>
                   <label className="block font-medium">Nome ou Username do Cliente:</label>
@@ -214,7 +241,7 @@ const LivroPageFuncionario: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleEmprestarLivro('fisico')}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700"
                   >
                     Confirmar Empréstimo Físico
                   </button>
@@ -234,7 +261,7 @@ const LivroPageFuncionario: React.FC = () => {
           {/* Modal de Reservar */}
           {isModalReservarOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-black rounded-lg p-6 w-full max-w-md shadow-lg">
+              <div className="bg-gray-200 rounded-lg p-6 w-full max-w-md shadow-lg">
                 <h2 className="text-xl font-bold mb-4">Reservar Livro</h2>
                 <div>
                   <label className="block font-medium">Nome ou Username do Cliente:</label>
@@ -251,7 +278,7 @@ const LivroPageFuncionario: React.FC = () => {
                   </button>
                   <button
                     onClick={handleReservarLivro}
-                    className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+                    className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700"
                   >
                     Confirmar Reserva
                   </button>

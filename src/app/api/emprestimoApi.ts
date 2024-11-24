@@ -7,10 +7,25 @@ export const emprestimoApi = {
     try {
       const response = await api.get('/emprestimos');
       return response.data; // Retorna a lista de todos os empréstimos
-    } catch (error) {
-      throw new Error('Erro ao carregar empréstimos');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao carregar empréstimos');
     }
   },
+  
+  excluirEmprestimosAntigos: async (anos: number): Promise<string> => {
+    try {
+      const response = await api.delete(`/emprestimos/anos/${anos}`);
+      
+      if (response.status === 204) {
+        return `Nenhum empréstimo encontrado para exclusão com mais de ${anos} anos.`;
+      }
+      return response.data; // Retorna a mensagem de sucesso se houver dados
+    } catch (error: any) {
+      // Lida com erros (como erro de validação, servidor, etc)
+      throw new Error(error.response?.data || `Erro ao excluir empréstimos antigos: ${error.message}`);
+    }
+  },
+  
 
   // Função para realizar empréstimo físico
   realizarEmprestimoFisico: async (isbn: string, username: string): Promise<string> => {
@@ -19,8 +34,8 @@ export const emprestimoApi = {
         params: { isbn, username }
       });
       return response.data; // Retorna a mensagem com o ID do empréstimo
-    } catch (error) {
-      throw new Error('Erro ao realizar empréstimo físico');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao realizar empréstimo físico');
     }
   },
 
@@ -31,8 +46,8 @@ export const emprestimoApi = {
         params: { isbn, username }
       });
       return response.data; // Retorna a mensagem com o ID do empréstimo
-    } catch (error) {
-      throw new Error('Erro ao realizar empréstimo digital');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao realizar empréstimo digital');
     }
   },
 
@@ -41,8 +56,8 @@ export const emprestimoApi = {
     try {
       const response = await api.get(`/emprestimos/username/${username}`);
       return response.data; // Retorna a lista de empréstimos do usuário
-    } catch (error) {
-      throw new Error('Erro ao listar empréstimos por username');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao listar empréstimos por username');
     }
   },
 
@@ -51,8 +66,8 @@ export const emprestimoApi = {
     try {
       const response = await api.get(`/emprestimos/id/${id}`);
       return response.data; // Retorna o empréstimo com o ID
-    } catch (error) {
-      throw new Error('Erro ao buscar empréstimo por ID');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao buscar empréstimo por ID');
     }
   },
 
@@ -61,8 +76,8 @@ export const emprestimoApi = {
     try {
       const response = await api.get('/emprestimos/fisico');
       return response.data; // Retorna a lista de empréstimos físicos
-    } catch (error) {
-      throw new Error('Erro ao listar empréstimos físicos');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao listar empréstimos físicos');
     }
   },
 
@@ -71,8 +86,8 @@ export const emprestimoApi = {
     try {
       const response = await api.get('/emprestimos/digital');
       return response.data; // Retorna a lista de empréstimos digitais
-    } catch (error) {
-      throw new Error('Erro ao listar empréstimos digitais');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao listar empréstimos digitais');
     }
   },
 
@@ -81,8 +96,8 @@ export const emprestimoApi = {
     try {
       const response = await api.get('/emprestimos/atrasados');
       return response.data; // Retorna a lista de empréstimos atrasados
-    } catch (error) {
-      throw new Error('Erro ao listar empréstimos atrasados');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao listar empréstimos atrasados');
     }
   },
 
@@ -91,8 +106,8 @@ export const emprestimoApi = {
     try {
       const response = await api.get('/emprestimos/ativos');
       return response.data; // Retorna a lista de empréstimos ativos
-    } catch (error) {
-      throw new Error('Erro ao listar empréstimos ativos');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao listar empréstimos ativos');
     }
   },
 
@@ -101,8 +116,8 @@ export const emprestimoApi = {
     try {
       const response = await api.get('/emprestimos/finalizados');
       return response.data; // Retorna a lista de empréstimos finalizados
-    } catch (error) {
-      throw new Error('Erro ao listar empréstimos finalizados');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao listar empréstimos finalizados');
     }
   },
 
@@ -111,8 +126,8 @@ export const emprestimoApi = {
     try {
       const response = await api.put(`/emprestimos/devolver/${id}`);
       return response.data; // Retorna mensagem de sucesso
-    } catch (error) {
-      throw new Error('Erro ao devolver o empréstimo');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao devolver o empréstimo');
     }
   },
 
@@ -121,8 +136,8 @@ export const emprestimoApi = {
     try {
       const response = await api.delete(`/emprestimos/${id}`);
       return response.data; // Retorna mensagem de sucesso
-    } catch (error) {
-      throw new Error('Erro ao remover empréstimo');
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Erro ao remover empréstimo');
     }
   },
 

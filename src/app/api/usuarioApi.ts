@@ -8,7 +8,12 @@ export const usuarioApi = {
       const response = await api.get('/usuarios');
       return response.data; // Retorna a lista de todos os usuários
     } catch (error) {
-      throw new Error('Erro ao carregar usuários');
+      if (error.response) {
+        // Se a resposta de erro existir, usamos o erro específico da API
+        const message = error.response.data || 'Erro ao carregar usuários';
+        throw new Error(message); // Passa a mensagem do erro para o front
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -18,7 +23,11 @@ export const usuarioApi = {
       const response = await api.get(`/usuarios/nome/${nome}`);
       return response.data; // Retorna os usuários filtrados pelo nome
     } catch (error) {
-      throw new Error('Erro ao carregar usuários por nome');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao carregar usuários por nome';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -28,7 +37,11 @@ export const usuarioApi = {
       const response = await api.get(`/usuarios/username/${username}`);
       return response.data; // Retorna o usuário com o username
     } catch (error) {
-      throw new Error('Erro ao carregar usuário por username');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao carregar usuário por username';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -38,7 +51,11 @@ export const usuarioApi = {
       const response = await api.get(`/usuarios/cpf/${cpf}`);
       return response.data; // Retorna os usuários filtrados pelo CPF
     } catch (error) {
-      throw new Error('Erro ao carregar usuários por CPF');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao carregar usuários por CPF';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -48,7 +65,11 @@ export const usuarioApi = {
       const response = await api.post('/usuarios', usuario);
       return response.data; // Retorna mensagem de sucesso
     } catch (error) {
-      throw new Error('Erro ao salvar usuário');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao salvar usuário';
+        throw new Error(message); // Passa o erro detalhado da API para o front
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -58,7 +79,11 @@ export const usuarioApi = {
       const response = await api.put(`/usuarios/${username}`, usuario);
       return response.data; // Retorna mensagem de sucesso
     } catch (error) {
-      throw new Error('Erro ao atualizar usuário');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao atualizar usuário';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 
@@ -68,7 +93,11 @@ export const usuarioApi = {
       const response = await api.delete(`/usuarios/${username}`);
       return response.data; // Retorna mensagem de sucesso
     } catch (error) {
-      throw new Error('Erro ao remover usuário');
+      if (error.response) {
+        const message = error.response.data || 'Erro ao remover usuário';
+        throw new Error(message);
+      }
+      throw new Error('Erro de rede ou servidor');
     }
   },
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "../api/apiCentral";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/authContext";
+import BotaoX from '../components/common/botaoX';  // Importando o BotaoX
 
 interface ModalProps {
   isOpen: boolean;
@@ -39,15 +40,15 @@ const ModalLogin: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (!username || !password) {
       setError("Por favor, preencha todos os campos.");
       return;
     }
-
+  
     setLoading(true);
     setError(null);
-
+  
     try {
       const response = await api.post("/login", null, {
         params: {
@@ -55,13 +56,13 @@ const ModalLogin: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           senha: password,
         },
       });
-
+  
       const userData = response.data;
-
+  
       // Salva o usuário no contexto e no localStorage
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
-
+  
       // Redireciona com base no tipo de usuário
       const tipoUsuario = userData.tipoUsuario;
       if (tipoUsuario === "CLIENTE") {
@@ -71,18 +72,42 @@ const ModalLogin: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       } else {
         console.error("Tipo de usuário inválido:", tipoUsuario);
       }
-
+  
       onClose(); // Fecha o modal após login
     } catch (err: any) {
+      // Verifica se o erro contém uma resposta da API
       if (err.response) {
-        setError(err.response.data.message || "Erro ao fazer login.");
+        // Aqui lidamos com os erros que vieram da API
+        const statusCode = err.response.status;
+        let errorMessage = "Erro desconhecido.";
+  
+        switch (statusCode) {
+          case 400:
+            errorMessage = "Campos inválidos. Por favor, preencha todos os campos corretamente.";
+            break;
+          case 401:
+            errorMessage = err.response.data || "Credenciais inválidas ou Usuário inativo.";
+            break;
+          case 404:
+            errorMessage = err.response.data || "Usuário não encontrado.";
+            break;
+          case 500:
+            errorMessage = "Erro interno no servidor. Tente novamente mais tarde.";
+            break;
+          default:
+            errorMessage = err.response.data.message || "Erro desconhecido.";
+        }
+  
+        setError(errorMessage); // Define a mensagem de erro para ser exibida
       } else if (err.request) {
-        setError("Erro de comunicação com o servidor.");
+        // Se não houve resposta da API
+        setError("Erro de comunicação com o servidor. Tente novamente.");
       } else {
-        setError("Erro desconhecido.");
+        // Qualquer outro tipo de erro
+        setError("Erro desconhecido. Por favor, tente novamente.");
       }
     } finally {
-      setLoading(false);
+      setLoading(false); // Desativa o estado de carregamento independentemente do sucesso ou falha
     }
   };
 
@@ -90,8 +115,12 @@ const ModalLogin: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-      <div className="bg-white p-8 rounded-lg w-96 shadow-lg animate-scaleUp">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Login</h2>
+      <div className="bg-white p-8 rounded-lg w-96 shadow-lg animate-scaleUp flex flex-col">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
+          {/* Substituindo o botão de fechar pelo BotaoX */}
+          <BotaoX onClose={onClose} />
+        </div>
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <input
             type="text"
@@ -135,12 +164,6 @@ const ModalLogin: React.FC<ModalProps> = ({ isOpen, onClose }) => {
           </button>
           {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
         </form>
-        <button
-          onClick={onClose}
-          className="mt-4 p-3 bg-transparent border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-        >
-          Fechar
-        </button>
       </div>
     </div>
   );

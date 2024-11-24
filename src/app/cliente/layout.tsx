@@ -16,7 +16,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthProvider> {/* Contexto de autenticação envolto no AuthProvider */}
-      <div className="bg-black text-white min-h-screen">
+      <div className="bg-white text-black min-h-screen">
         {/* Cabeçalho */}
 
         {/* Conteúdo principal */}
