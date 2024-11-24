@@ -97,6 +97,7 @@ const ModalDadosFuncionario: React.FC<ModalDadosFuncionarioProps> = ({ isOpen, o
               onChange={handleChange}
               className="w-full p-2 border rounded bg-gray-100"
               placeholder="000.000.000-00"
+              readOnly
             />
           </div>
           <div>
